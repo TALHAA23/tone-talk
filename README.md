@@ -1,87 +1,87 @@
-# Welcome to React Router!
+# ToneTalk 🗣️
 
-A modern, production-ready template for building full-stack React applications using React Router.
+A minimal AI chatbot application that lets you chat with three distinct personality bots, each with their own unique communication style and tone.
 
-[![Open in StackBlitz](https://developer.stackblitz.com/img/open_in_stackblitz.svg)](https://stackblitz.com/github/remix-run/react-router-templates/tree/main/default)
+## 🤖 Meet the Bots
 
-## Features
+### 1. Gen Alpha Bot 🔥
 
-- 🚀 Server-side rendering
-- ⚡️ Hot Module Replacement (HMR)
-- 📦 Asset bundling and optimization
-- 🔄 Data loading and mutations
-- 🔒 TypeScript by default
-- 🎉 TailwindCSS for styling
-- 📖 [React Router docs](https://reactrouter.com/)
+Your terminally online bestie who speaks fluent brainrot. Expect responses packed with rizz, no cap energy, and all the latest slang that'll either make you cringe or feel absolutely based.
 
-## Getting Started
+**Style**: Modern internet slang, Gen Alpha terminology (rizz, sigma, skibidi, based, etc.)
+
+### 2. Sarcastic Teenager Bot 😒
+
+The digital embodiment of eye-rolls and sighs. This bot has mastered the art of being helpful while making you feel slightly judged. Prepare for sass with a side of actual answers.
+
+**Style**: Sarcastic, dramatic, but ultimately helpful with teenage attitude
+
+### 3. ELI5 Explainer Bot 👶
+
+Your patient friend who breaks down everything into bite-sized, easy-to-understand pieces. No fancy words, no confusing jargon - just simple explanations that make sense to everyone.
+
+**Style**: Simple language, analogies, step-by-step explanations suitable for a 5-year-old
+
+## ✨ Features
+
+- **Three Distinct Personalities**: Each bot maintains consistent character while providing helpful responses
+- **Versatile Communication**: From casual chat to serious questions, each bot adapts their style accordingly
+- **Educational & Entertaining**: Learn something new or just have fun with different conversation styles
+- **User-Friendly Interface**: Simple design focused on the conversation experience
+
+## 🚀 Getting Started
 
 ### Installation
 
-Install the dependencies:
+1. Clone the repository
+
+```bash
+git clone https://github.com/yourusername/tonetalk.git
+cd tonetalk
+```
+
+2. Install dependencies
 
 ```bash
 npm install
 ```
 
-### Development
+3. Set up environment variables
 
-Start the development server with HMR:
+```bash
+cp .env.example .env
+```
+
+Edit `.env` with your API keys and configuration
+
+4. Start the development server
 
 ```bash
 npm run dev
 ```
 
-Your application will be available at `http://localhost:5173`.
+5. Open your browser and navigate to `http://localhost:3000`
 
-## Building for Production
+## 🛠️ Configuration
 
-Create a production build:
+### Environment Variables
 
-```bash
-npm run build
+```env
+# AI Model Configuration
+AI_API_KEY=your_api_key_here
+AI_MODEL=your_preferred_model
+
+# Application Settings
+PORT=5173
+NODE_ENV=development
 ```
 
-## Deployment
+### Bot Personalities
 
-### Docker Deployment
+Each bot is configured with specific system instructions that define their personality:
 
-To build and run using Docker:
+- **Gen Alpha Bot**: Responds with modern slang and internet culture references
+- **Sarcastic Teenager**: Provides helpful information with attitude and sarcasm
+- **ELI5 Explainer**: Breaks down complex topics into simple, understandable explanations
 
-```bash
-docker build -t my-app .
-
-# Run the container
-docker run -p 3000:3000 my-app
-```
-
-The containerized application can be deployed to any platform that supports Docker, including:
-
-- AWS ECS
-- Google Cloud Run
-- Azure Container Apps
-- Digital Ocean App Platform
-- Fly.io
-- Railway
-
-### DIY Deployment
-
-If you're familiar with deploying Node applications, the built-in app server is production-ready.
-
-Make sure to deploy the output of `npm run build`
-
-```
-├── package.json
-├── package-lock.json (or pnpm-lock.yaml, or bun.lockb)
-├── build/
-│   ├── client/    # Static assets
-│   └── server/    # Server-side code
-```
-
-## Styling
-
-This template comes with [Tailwind CSS](https://tailwindcss.com/) already configured for a simple default starting experience. You can use whatever CSS framework you prefer.
-
----
-
-Built with ❤️ using React Router.
+**Made with ❤️ for Fun conversations**
