@@ -5,6 +5,8 @@ const messageContainer = cva("w-[60%] p-3 rounded-md text-sm p-1 my-1", {
     type: {
       sent: "bg-blue-500 text-white self-end rounded-br-none ml-auto",
       received: "bg-gray-200 text-black self-start rounded-bl-none",
+      loading:
+        "bg-gray-200 text-black self-start rounded-bl-none animate-pulse",
     },
   },
   defaultVariants: {

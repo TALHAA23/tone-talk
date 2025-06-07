@@ -1,10 +1,29 @@
-import { GoogleGenAI, type Content } from "@google/genai";
+import {
+  GoogleGenAI,
+  HarmBlockMethod,
+  HarmBlockThreshold,
+  HarmCategory,
+  Modality,
+  type Content,
+  type GenerateContentConfig,
+  type SafetySetting,
+} from "@google/genai";
 import type { ChatBots } from "~/types";
 
 export const genAI = new GoogleGenAI({
   apiKey: import.meta.env.VITE_GEMINI_API,
 });
 const model = "gemini-2.0-flash";
+const safetySettings: SafetySetting[] = [
+  {
+    category: HarmCategory.HARM_CATEGORY_HATE_SPEECH,
+    threshold: HarmBlockThreshold.BLOCK_MEDIUM_AND_ABOVE,
+  },
+  {
+    category: HarmCategory.HARM_CATEGORY_SEXUALLY_EXPLICIT,
+    threshold: HarmBlockThreshold.BLOCK_MEDIUM_AND_ABOVE,
+  },
+];
 
 // gen alpha
 const genAlphaHistory: Content[] = [];
@@ -14,12 +33,13 @@ async function genAlphaChatBot(input: string, chatType: ChatBots) {
     parts: [{ text: input }],
   });
 
-  const config = {
+  const config: GenerateContentConfig = {
     systemInstruction: [
       {
         text: `You respond to simple chat messages but in ${chatType} style.`,
       },
     ],
+    safetySettings,
   };
 
   const response = await genAI.chats
@@ -29,7 +49,6 @@ async function genAlphaChatBot(input: string, chatType: ChatBots) {
       config,
     })
     .sendMessage({ message: input });
-
   genAlphaHistory.push({
     role: "model",
     parts: [{ text: response.text }],
@@ -47,6 +66,7 @@ async function sarcasticTeenagerChatBot(input: string, chatType: ChatBots) {
   });
 
   const config = {
+    safetySettings,
     systemInstruction: [
       {
         text: `You are a sarcastic teenager who responds to everything with the perfect blend of eye-rolling attitude and reluctant helpfulness. Your personality traits:
@@ -100,6 +120,7 @@ async function fiveYearOldChatBot(input: string, chatType: ChatBots) {
   });
 
   const config = {
+    safetySettings,
     systemInstruction: [
       {
         text: `You are a patient, enthusiastic teacher who explains everything like you're talking to a curious 5-year-old. Your goal is to make any topic simple, fun, and easy to understand.
@@ -154,4 +175,48 @@ Note: Do not generate too long response.
   return response.text;
 }
 
-export { genAlphaChatBot, sarcasticTeenagerChatBot, fiveYearOldChatBot };
+async function imageGeneration(prompt: string, chatBot: ChatBots) {
+  const response = await genAI.models.generateContent({
+    model: "gemini-2.0-flash-preview-image-generation",
+    contents: prompt,
+    config: {
+      responseModalities: [Modality.TEXT, Modality.IMAGE],
+      safetySettings,
+    },
+  });
+  const parts = response?.candidates?.[0]?.content?.parts;
+  if (!parts) return null;
+
+  for (const part of parts) {
+    if (part.text) {
+      if (chatBot === "gen-alpha") {
+        genAlphaHistory.push(
+          { role: "user", parts: [{ text: prompt }] },
+          { role: "model", parts: [{ text: part.text }] }
+        );
+      } else if (chatBot === "5-years-old") {
+        fiveYearOld.push(
+          { role: "user", parts: [{ text: prompt }] },
+          { role: "model", parts: [{ text: part.text }] }
+        );
+      } else if (chatBot === "sarcastic-teenager") {
+        sarcasticTeenager.push(
+          { role: "user", parts: [{ text: prompt }] },
+          { role: "model", parts: [{ text: part.text }] }
+        );
+      }
+    }
+    if (part.inlineData && part.inlineData.mimeType?.startsWith("image/")) {
+      // Return a data URL suitable for img.src
+      return `data:${part.inlineData.mimeType};base64,${part.inlineData.data}`;
+    }
+  }
+  return null;
+}
+
+export {
+  genAlphaChatBot,
+  sarcasticTeenagerChatBot,
+  fiveYearOldChatBot,
+  imageGeneration,
+};

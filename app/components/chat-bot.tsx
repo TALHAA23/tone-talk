@@ -7,28 +7,53 @@ import {
   notificationContainer,
   type MessageContainerProps,
 } from "~/utils/cva";
+import { imageGeneration } from "~/utils/gemini-api";
 interface Props {
   chatbot: ChatBots;
   model: Model;
 }
 export default function ChatBot({ chatbot, model }: Props) {
+  const [loading, setLoading] = useState(false);
   const [notification, setNotification] = useState<JSX.Element | null>(null);
   const chatContainerRef = useRef<HTMLDivElement>(null);
   const [chats, setChats] = useState<JSX.Element[]>([]);
-  const createMessage = (message: string, props: MessageContainerProps) => {
-    return <p className={messageContainer(props)}>{message}</p>;
+  const parseMarkdown = (text: string) => {
+    text = text.replace(/\*\*(.+?)\*\*/g, "<b>$1</b>");
+    text = text.replace(/\*(.+?)\*/g, "<i>$1</i>");
+    return text;
   };
-
+  const createMessage = (message: string, props: MessageContainerProps) => {
+    return (
+      <p
+        className={messageContainer(props)}
+        dangerouslySetInnerHTML={{ __html: parseMarkdown(message) }}
+      />
+    );
+  };
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     try {
-      const value = new FormData(e.currentTarget)
-        .get("user-message")
-        ?.toString();
-      e.currentTarget.reset();
+      setLoading(true);
+      const formData = new FormData(e.currentTarget);
+      const value = formData.get("user-message")?.toString();
+      // reset input
+      const input = e.currentTarget.elements.namedItem(
+        "user-message"
+      ) as HTMLInputElement | null;
+      if (input) input.value = "";
+      const isImageGeneration = formData.get("image-generation");
       if (value) {
         const myMessage = createMessage(value, { type: "sent" });
         setChats((prev) => [...prev, myMessage]);
+        if (isImageGeneration) {
+          const response = await imageGeneration(value, chatbot);
+          if (response) {
+            const image = createImage(response);
+            setChats((prev) => [...prev, image]);
+          }
+          return;
+        }
+
         const response = await model(value, chatbot);
         const assistantMessage = createMessage(response || "", {
           type: "received",
@@ -43,7 +68,19 @@ export default function ChatBot({ chatbot, model }: Props) {
         </p>
       );
       setNotification(notification);
+    } finally {
+      setLoading(false);
     }
+  };
+
+  const createImage = (src: string) => {
+    return (
+      <img
+        src={src}
+        alt="no-image"
+        className="w-[60%] aspect-square rounded-md p-1 my-1 bg-gray-200 text-black self-start rounded-bl-none"
+      />
+    );
   };
 
   useEffect(() => {
@@ -81,18 +118,42 @@ export default function ChatBot({ chatbot, model }: Props) {
         >
           {notification && notification}
           {...chats}
+          {loading && createMessage("Thinking...", { type: "loading" })}
         </div>
         {/* message */}
         <form
           onSubmit={handleSubmit}
           className=" bottom-0 w-full h-[45px]  flex items-center gap-1.5"
+          autoComplete="off"
         >
           <input
             name="user-message"
             type="text"
             className="grow h-full rounded-2xl border-2 p-3 peer"
             required
+            autoComplete="off"
+            autoCorrect="off"
+            spellCheck={false}
           />
+          <input
+            type="checkbox"
+            id="image-generation"
+            name="image-generation"
+            hidden
+            className="peer"
+          />
+          <div className="h-full aspect-square bg-blue-200 p-2 rounded-full peer-checked:bg-blue-500">
+            <label
+              htmlFor="image-generation"
+              className="bg-blue-400 h-full aspect-square cursor-pointer"
+            >
+              <img
+                src="/image-svgrepo-com.svg"
+                alt="img-gen"
+                className="h-full group-hover:translate-x-1.5 group-hover:-translate-y-2 transition-all duration-300"
+              />
+            </label>
+          </div>
           <button className="group h-full cursor-pointer rounded-full bg-blue-300 p-2 disabled:opacity-45 hover:bg-blue-500 peer-invalid:cursor-not-allowed peer-invalid:opacity-50">
             <img
               src="/send.svg"
