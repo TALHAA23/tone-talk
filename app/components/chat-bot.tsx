@@ -1,18 +1,15 @@
-import { cva } from "class-variance-authority";
 import { useEffect, useRef, useState, type JSX } from "react";
 import { Link } from "react-router";
-import type { ChatBots, Model } from "~/types";
+import type { ChatBots } from "~/types";
 import {
   messageContainer,
   notificationContainer,
   type MessageContainerProps,
 } from "~/utils/cva";
-import { imageGeneration } from "~/utils/gemini-api";
 interface Props {
   chatbot: ChatBots;
-  model: Model;
 }
-export default function ChatBot({ chatbot, model }: Props) {
+export default function ChatBot({ chatbot }: Props) {
   const [loading, setLoading] = useState(false);
   const [notification, setNotification] = useState<JSX.Element | null>(null);
   const chatContainerRef = useRef<HTMLDivElement>(null);
@@ -41,24 +38,38 @@ export default function ChatBot({ chatbot, model }: Props) {
         "user-message"
       ) as HTMLInputElement | null;
       if (input) input.value = "";
-      const isImageGeneration = formData.get("image-generation");
+      const isImgGen = formData.get("image-generation");
       if (value) {
         const myMessage = createMessage(value, { type: "sent" });
         setChats((prev) => [...prev, myMessage]);
-        if (isImageGeneration) {
-          const response = await imageGeneration(value, chatbot);
-          if (response) {
-            const image = createImage(response);
-            setChats((prev) => [...prev, image]);
+
+        const response = await fetch(
+          `https://815d8f24-tone-talk-worker.talhaa23.workers.dev/api/${chatbot}`,
+          // `http://127.0.0.1:8787/api/${chatbot}`,
+          {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ prompt: value, isImgGen: !!isImgGen }),
+            credentials: "include",
           }
-          return;
+        );
+
+        if (!response.ok) {
+          const errorMsg = await response.text();
+          throw new Error(errorMsg);
         }
 
-        const response = await model(value, chatbot);
-        const assistantMessage = createMessage(response || "", {
-          type: "received",
-        });
-        setChats((prev) => [...prev, assistantMessage]);
+        const data = await response.json();
+
+        if (!data.response) {
+          throw new Error("Too Many Requests!");
+        }
+        const assistanceResponse = data.response.startsWith("data:")
+          ? createImage(data.response)
+          : createMessage(data.response || "", {
+              type: "received",
+            });
+        setChats((prev) => [...prev, assistanceResponse]);
       }
     } catch (err) {
       const notification = (

@@ -1,6 +1,5 @@
 import ChatBot from "~/components/chat-bot";
 import type { Route } from "./+types/home";
-import { sarcasticTeenagerChatBot } from "~/utils/gemini-api";
 
 export function meta({}: Route.MetaArgs) {
   return [
@@ -10,7 +9,5 @@ export function meta({}: Route.MetaArgs) {
 }
 
 export default function Home() {
-  return (
-    <ChatBot chatbot="sarcastic-teenager" model={sarcasticTeenagerChatBot} />
-  );
+  return <ChatBot chatbot="sarcastic-teenager" />;
 }
