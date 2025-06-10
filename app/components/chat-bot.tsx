@@ -44,7 +44,7 @@ export default function ChatBot({ chatbot }: Props) {
         setChats((prev) => [...prev, myMessage]);
 
         const response = await fetch(
-          `https://815d8f24-tone-talk-worker.talhaa23.workers.dev/api/${chatbot}`,
+          `https://6913309b-tone-talk-worker.talhaa23.workers.dev/${chatbot}`,
           // `http://127.0.0.1:8787/api/${chatbot}`,
           {
             method: "POST",
